@@ -1,9 +1,9 @@
-const fs = require("fs");
-const process = require("process");
+import fs from "fs";
+import process from "process";
 
-const apn = require("@parse/node-apn");
-const express = require("express");
-const morgan = require("morgan");
+import apn from "@parse/node-apn";
+import express from "express";
+import morgan from "morgan";
 
 const PORT = process.env.PORT || 5000;
 
@@ -17,17 +17,17 @@ const apnProvider = new apn.Provider({
   production: true,
   token: {
     key: AUTH_KEY_PATH,
-    keyId: process.env.KEY_ID,
-    teamId: process.env.TEAM_ID,
+    keyId: process.env.KEY_ID as string,
+    teamId: process.env.TEAM_ID as string,
   },
 });
 
-async function sendNotification(deviceId, alert, payload) {
+async function sendNotification(deviceId: string, alert: apn.NotificationAlertOptions, payload: Object) {
   if (!alert) throw "missing alert";
   const notification = new apn.Notification();
   notification.alert = alert;
   notification.payload = payload;
-  notification.topic = process.env.TOPIC;
+  notification.topic = process.env.TOPIC as string;
   const result = await apnProvider.send(notification, deviceId);
   if (result.failed.length) {
     const { error, response } = result.failed[0];
@@ -44,7 +44,7 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use("/", router);
 
-function auth(req, res, next) {
+function auth(req: express.Request, res: express.Response, next: express.NextFunction) {
   const { authorization } = req.headers;
   const secret = authorization && authorization.split(" ")[1];
   if (secret && secret === process.env.SECRET) {
@@ -59,7 +59,7 @@ router.post("/notify", auth, async (req, res) => {
   try {
     await sendNotification(deviceId, alert, payload || {});
     res.send({ success: true });
-  } catch (e) {
+  } catch (e: any) {
     console.error(e);
     res.status(400).send({ success: false, error: e.message || e });
   }
