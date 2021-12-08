@@ -28,6 +28,7 @@ async function sendNotification(deviceId: string, alert: apn.NotificationAlertOp
   notification.alert = alert;
   notification.payload = payload;
   notification.topic = process.env.TOPIC as string;
+  notification.sound = "default";
   const result = await apnProvider.send(notification, deviceId);
   if (result.failed.length) {
     const { error, response } = result.failed[0];
