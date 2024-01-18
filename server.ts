@@ -57,13 +57,19 @@ function auth(req: express.Request, res: express.Response, next: express.NextFun
 
 router.post("/notify", auth, async (req, res) => {
   const { deviceId, alert, payload } = req.body;
-  try {
-    await sendNotification(deviceId, alert, payload || {});
-    res.send({ success: true });
-  } catch (e: any) {
-    console.error(e);
-    res.status(400).send({ success: false, error: e.message || e });
-  }
+
+  (async () => {
+    try {
+      await sendNotification(deviceId, alert, payload || {});
+      if(process.env.DEBUG) {
+        console.info("Notification sent to", deviceId);
+      }
+    } catch (e: any) {
+      console.error(e);
+    }
+  })();
+
+  res.send({ success: true });
 });
 
 router.all("*", (_req, res) => res.sendStatus(404));
